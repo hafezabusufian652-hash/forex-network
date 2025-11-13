@@ -1,0 +1,774 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>The Forex Network</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  /* Design kept as requested */
+  body { margin:0; padding:0; font-family:'Poppins',sans-serif; background: linear-gradient(200deg,#ff5f6d,#ffc371); color:#333; display:flex; justify-content:center; align-items:flex-start; min-height:100vh; overflow-y:auto; scroll-behavior:smooth;}
+  .container { width:100%; max-width:520px; background:rgba(255,255,255,0.96); border-radius:18px; box-shadow:0 8px 50px rgba(0,0,0,0.15); padding:26px 20px 50px 20px; backdrop-filter:blur(8px); margin:60px auto 80px auto;}
+  .floating-logo { position:fixed; top:8px; left:50%; transform:translateX(-50%); background:white; border-radius:50%; box-shadow:0 4px 15px rgba(0,0,0,0.18); padding:8px; z-index:1000;}
+  .floating-logo img { width:70px; height:70px; border-radius:50%; object-fit:cover; }
+  h1 { font-size:24px; background: linear-gradient(90deg,#ff5f6d,#ffc371); -webkit-background-clip:text; color:transparent; margin-bottom:18px; text-align:center; }
+  .menu { display:flex; flex-wrap:wrap; justify-content:space-around; margin:10px 0; gap:6px; }
+  .menu button { flex:1 1 30%; margin:4px; padding:10px; border-radius:12px; border:none; background: linear-gradient(90deg,#ff5f6d,#ffc371); color:#fff; font-weight:600; cursor:pointer; transition:0.22s; min-width:110px; }
+  .menu button:hover { transform:translateY(-2px); opacity:0.97; }
+  .hidden { display:none; }
+  input,select,button,textarea { width:100%; padding:10px; margin:8px 0; border-radius:12px; border:1px solid #ccc; box-sizing:border-box; font-size:15px; }
+  input:focus, select:focus, textarea:focus { border-color:#e65100; box-shadow:0 0 6px rgba(230,81,0,0.18); outline:none; }
+  .balance-card { background: linear-gradient(90deg,#ff5f6d,#ffc371); padding:14px; border-radius:14px; text-align:center; font-size:18px; font-weight:700; color:#fff; margin:10px 0 10px; }
+  .notice-card { background:linear-gradient(90deg,#ff5f6d,#ffc371); padding:12px; border-radius:12px; margin-bottom:12px; color:white; font-weight:600; }
+  .task, .trans { border:1px solid #eee; padding:12px; border-radius:12px; background:#fff8e6; margin:10px 0; }
+  .task:hover, .trans:hover { background:#fff6e0; }
+  table { width:100%; border-collapse:collapse; font-size:14px; background:#fff; border-radius:10px; overflow:hidden; margin:10px 0; }
+  th, td { padding:8px; text-align:left; border-bottom:1px solid #f2f2f2; }
+  th { background:#ff5f6d; color:white; font-weight:700; }
+  tr:nth-child(even){ background:#fafafa; }
+  .action-btn { display:inline-block; margin:2px; padding:6px 10px; border:none; border-radius:8px; color:#fff; font-size:13px; font-weight:600; cursor:pointer; }
+  .approve { background:#4caf50; }
+  .reject { background:#e53935; }
+  .block, .unblock { background:#4caf50; }
+  .delete { background:#ff5252; }
+  .card { background:rgba(255,255,255,0.96); padding:14px; border-radius:12px; box-shadow:0 3px 10px rgba(0,0,0,0.06); margin-bottom:12px; }
+  #helpList, #adminHelpList { max-height:260px; overflow-y:auto; }
+  #signupDiv button{ background: linear-gradient(90deg,#ff416c,#ff4b2b); color:white; font-weight:700; border:none; padding:12px; border-radius:12px; }
+  #loginDiv button{ background: linear-gradient(90deg,#ff6a88,#ff4b2b); color:white; font-weight:700; border:none; padding:12px; border-radius:12px; }
+  @media(max-width:760px){ .menu button{ flex:1 1 45%; } .container{ padding:18px; } h1{font-size:20px;} }
+  .small { font-size:13px; color:#555; }
+  .status-pill { display:inline-block; padding:6px 8px; border-radius:999px; font-weight:700; font-size:12px; color:#fff; }
+  .status-pending { background:#ffb74d; }
+  .status-approved { background:#4caf50; }
+  .status-rejected { background:#e53935; }
+  .muted { color:#666; font-size:13px; }
+</style>
+</head>
+<body>
+
+  <div class="floating-logo"><img src="logo.png" id="platformLogo" alt="Logo"></div>
+
+  <div class="container" id="mainContainer">
+    <h1>The Forex Network</h1>
+
+    <!-- AUTH -->
+    <div id="authDiv">
+      <div id="signupDiv">
+        <h2>Sign Up</h2>
+        <input id="signupName" placeholder="Full name" />
+        <input id="signupPhone" placeholder="Phone number" />
+        <input id="signupPass" type="password" placeholder="Password" />
+        <input id="signupRefCode" placeholder="Referral code (optional)" />
+        <button onclick="signup()">Sign Up</button>
+        <p class="muted">Already have an account? <a href="#" onclick="showLogin()">Login</a></p>
+      </div>
+
+      <div id="loginDiv" class="hidden">
+        <h3>Login</h3>
+        <input id="loginPhone" placeholder="Phone number" />
+        <input id="loginPass" type="password" placeholder="Password" />
+        <button onclick="login()">Login</button>
+        <p class="muted">Don't have an account? <a href="#" onclick="showSignup()">Sign Up</a></p>
+      </div>
+    </div>
+
+    <!-- USER DASHBOARD -->
+    <div id="userDashboard" class="hidden">
+      <div style="text-align:right;"><button style="background:linear-gradient(90deg,#ff5f6d,#ffc371);color:#fff;padding:8px;border-radius:8px;border:none;" onclick="logout()">Logout</button></div>
+
+      <h3>Name: <span id="userName"></span></h3>
+      <div class="balance-card">Balance: ৳ <span id="userBalance">0.00</span></div>
+      <div id="userNotice" class="notice-card hidden"></div>
+
+      <div class="menu">
+        <button onclick="goHome()">Home</button>
+        <button onclick="showSection('plans')">My Plan</button>
+        <button onclick="showSection('deposit')">Deposit</button>
+        <button onclick="showSection('withdraw')">Withdraw</button>
+        <button onclick="showSection('transactions')">Transactions</button>
+        <button onclick="showSection('refer')">My Team</button>         <!-- swapped -->
+        <button onclick="showSection('tasks')">My Work</button>
+        <button onclick="showSection('account')">Settings</button>
+        <button onclick="showSection('support')">Support</button>      <!-- swapped -->
+      </div>
+
+      <div id="home"><h2>Welcome to The Forex Network</h2><p class="small">Complete tasks, earn money and grow your business efficiently.</p></div>
+
+      <div id="plans" class="hidden">
+        <h2>Buy a Plan</h2>
+        <div id="currentPlanInfo" class="card"></div>
+        <div class="card"><h4>৳300 Plan</h4><p class="small">3 tasks/day • reward per task set by admin</p><button onclick="buyPlan(300)">Buy Now (৳300)</button></div>
+        <div class="card"><h4>৳1000 Plan</h4><p class="small">10 tasks/day • reward per task set by admin</p><button onclick="buyPlan(1000)">Buy Now (৳1000)</button></div>
+      </div>
+
+      <div id="tasks" class="hidden"><h2>My Work</h2><div id="taskList"></div></div>
+
+      <div id="deposit" class="hidden">
+        <h2>Deposit</h2>
+        <h4 class="small">Mobile: Bkash / Nagad number: <b>01734625071</b></h4>
+        <select id="depositMethod"><option>Bkash</option><option>Nagad</option></select>
+        <input id="depositAmount" type="number" placeholder="Amount (300 or 1000 only)" />
+        <input id="depositCode" placeholder="Transaction code (from your mobile payment)" />
+        <button onclick="deposit()">Send Deposit Request</button>
+        <p class="small muted">Rule: Deposits allowed only for plan purchase amounts (৳300 or ৳1000) and only if you don't have an active plan within the last 30 days.</p>
+      </div>
+
+      <div id="withdraw" class="hidden">
+        <h2>Withdraw</h2>
+        <p class="small">Note: For first withdraw you must refer at least 5 people who buy a plan and do tasks.</p>
+        <select id="withdrawMethod"><option>Bkash</option><option>Nagad</option></select>
+        <input id="withdrawNumber" placeholder="Your mobile number" />
+        <input id="withdrawAmount" type="number" placeholder="Amount (minimum ৳1000)" />
+        <button onclick="withdraw()">Request Withdraw</button>
+      </div>
+
+      <div id="transactions" class="hidden"><h2>Transaction History</h2>
+        <div class="card"><h4>Deposit History</h4><div id="depositHistory"></div></div>
+        <div class="card"><h4>Withdraw History</h4><div id="withdrawHistory"></div></div>
+        <div class="card"><h4>Plan Purchase History</h4><div id="planHistory"></div></div>
+        <div class="card"><h4>Other Transactions</h4><div id="otherHistory"></div></div>
+      </div>
+
+      <div id="refer" class="hidden">
+        <h2>My Team (Referrals)</h2>
+        <div id="myReferLink" class="card"></div>
+        <div id="referHistory" class="card"></div>
+      </div>
+
+      <div id="support" class="hidden">
+        <h2>Support Center</h2>
+        <p class="small">Send a message to admin. Admin can reply from Admin Panel. Useful links below.</p>
+        <input id="helpMessage" placeholder="Type your message" />
+        <button onclick="sendHelp()">Send</button>
+        <div id="helpList"></div>
+
+        <div class="card">
+          <h4>Useful Links</h4>
+          <p>Income Review Group: <a id="reviewGroupLink" href="#" target="_blank">Visit Group</a></p>
+          <p>YouTube Channel: <a id="youtubeLink" href="#" target="_blank">Visit Channel</a></p>
+          <p>Admin Telegram: <a id="telegramLink" href="#" target="_blank">Message Admin</a></p>
+        </div>
+      </div>
+
+      <div id="account" class="hidden">
+        <h2>Account Settings</h2>
+        <p class="small">Change password</p>
+        <input id="oldPass" type="password" placeholder="Current password" />
+        <input id="newPass" type="password" placeholder="New password" />
+        <button onclick="changePassword()">Change Password</button>
+      </div>
+
+    </div>
+
+    <!-- ADMIN PANEL -->
+    <div id="adminPanel" class="hidden">
+      <h2>Admin Panel</h2>
+      <div style="text-align:right;margin-bottom:10px;"><button style="background:#e53935;color:#fff;padding:8px;border-radius:8px;border:none;" onclick="logout()">Logout</button></div>
+
+      <div class="menu">
+        <button onclick="showAdminSection('adminTasks')">Tasks</button>
+        <button onclick="showAdminSection('adminUsers')">Users</button>
+        <button onclick="showAdminSection('adminDeposits')">Deposit Requests</button>
+        <button onclick="showAdminSection('adminWithdraws')">Withdraw Requests</button>
+        <button onclick="showAdminSection('adminHelp')">Support Desk</button>
+        <button onclick="showAdminSection('adminNotice')">Send Notice</button>
+        <button onclick="showAdminSection('adminLogo')">Change Logo</button>
+      </div>
+
+      <div id="adminNotice" class="hidden card">
+        <h3>Send Notice to All Users</h3>
+        <input id="noticeMessage" placeholder="Type your notice here" />
+        <button onclick="sendNotice()">Send Notice</button>
+      </div>
+
+      <div id="adminLogo" class="hidden card">
+        <h3>Change Logo</h3>
+        <input id="logoInput" type="file" accept="image/*" /><button onclick="changeLogo()">Upload Logo</button>
+      </div>
+
+      <div id="adminTasks" class="hidden card">
+        <h3>Manage Tasks (Add / Delete) + Set Reward</h3>
+        <input id="taskTitle" placeholder="Task title" />
+        <input id="taskLink" placeholder="Task link (https://...)" />
+        <input id="taskReward" type="number" placeholder="Reward per task (৳) — e.g. 10" />
+        <button onclick="addTask()">Add Task</button>
+        <div id="adminTaskList"></div>
+      </div>
+
+      <div id="adminUsers" class="hidden card">
+        <h3>Users List</h3>
+        <table id="usersTable"><thead><tr><th>Name</th><th>Phone</th><th>Balance</th><th>Password</th><th>Status</th><th>Action</th></tr></thead><tbody></tbody></table>
+      </div>
+
+      <div id="adminDeposits" class="hidden card">
+        <h3>Deposit Requests</h3>
+        <table id="depositTable"><thead><tr><th>User</th><th>Amount</th><th>Method</th><th>Code</th><th>Status</th><th>Action</th></tr></thead><tbody></tbody></table>
+      </div>
+
+      <div id="adminWithdraws" class="hidden card">
+        <h3>Withdraw Requests</h3>
+        <table id="withdrawTable"><thead><tr><th>User</th><th>Amount</th><th>Method</th><th>Number</th><th>Status</th><th>Action</th></tr></thead><tbody></tbody></table>
+      </div>
+
+      <div id="adminHelp" class="hidden card">
+        <h3>Support Desk</h3>
+        <div id="adminHelpList"></div>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+/* ========== Data & constants ========== */
+let users = JSON.parse(localStorage.getItem('users')) || [];
+let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+let deposits = JSON.parse(localStorage.getItem('deposits')) || [];
+let withdraws = JSON.parse(localStorage.getItem('withdraws')) || [];
+let helps = JSON.parse(localStorage.getItem('helps')) || [];
+let currentUser = null;
+
+// admin credentials (change if you want)
+const adminPhone = "01700000000";
+const adminPass = "admin123";
+
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+const MIN_WITHDRAW_AMOUNT = 1000;
+const PLAN_AMOUNTS = [300, 1000]; // allowed deposit amounts (and plan amounts)
+const PLAN_COOLDOWN_DAYS = 30; // cannot deposit if existing plan is younger than this
+
+/* ========== helpers ========== */
+function saveAll(){
+  localStorage.setItem('users', JSON.stringify(users));
+  localStorage.setItem('tasks', JSON.stringify(tasks));
+  localStorage.setItem('deposits', JSON.stringify(deposits));
+  localStorage.setItem('withdraws', JSON.stringify(withdraws));
+  localStorage.setItem('helps', JSON.stringify(helps));
+}
+function findUserIndexByPhone(phone){ return users.findIndex(u => u.phone === phone); }
+function findUserByPhone(phone){ return users.find(u => u.phone === phone); }
+function todayISO(){ return (new Date()).toISOString().split('T')[0]; }
+function nowMs(){ return Date.now(); }
+function generateId(prefix='id'){ return prefix + '_' + nowMs() + '_' + Math.floor(Math.random()*10000); }
+function escapeHtml(s){ if(s===null||s===undefined) return ''; return String(s).replace(/[&<>"'`=\/]/g, ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'})[ch]); }
+function capitalize(s){ if(!s) return ''; return String(s).charAt(0).toUpperCase()+String(s).slice(1); }
+function statusPill(status){
+  status = (status||'').toString().toLowerCase();
+  if(status==='approved') return '<span class="status-pill status-approved">Approved</span>';
+  if(status==='rejected') return '<span class="status-pill status-rejected">Rejected</span>';
+  return '<span class="status-pill status-pending">Pending</span>';
+}
+
+/* ====== Logo loader ====== */
+function loadLogo(){ let logo = localStorage.getItem('platformLogo'); if(logo) document.getElementById('platformLogo').src = logo; }
+function changeLogo(){
+  let file = document.getElementById('logoInput').files[0];
+  if(!file) return alert('Select an image first');
+  let reader = new FileReader();
+  reader.onload = function(e){
+    localStorage.setItem('platformLogo', e.target.result);
+    document.getElementById('platformLogo').src = e.target.result;
+    alert('Logo updated');
+  };
+  reader.readAsDataURL(file);
+}
+loadLogo();
+
+/* ====== Auth ====== */
+function showSignup(){ document.getElementById('signupDiv').classList.remove('hidden'); document.getElementById('loginDiv').classList.add('hidden'); }
+function showLogin(){ document.getElementById('signupDiv').classList.add('hidden'); document.getElementById('loginDiv').classList.remove('hidden'); }
+function logout(){
+  currentUser = null;
+  document.getElementById('userDashboard').classList.add('hidden');
+  document.getElementById('adminPanel').classList.add('hidden');
+  document.getElementById('authDiv').classList.remove('hidden');
+  saveAll();
+}
+
+function signup(){
+  let name = document.getElementById('signupName').value.trim();
+  let phone = document.getElementById('signupPhone').value.trim();
+  let pass = document.getElementById('signupPass').value;
+  let ref = document.getElementById('signupRefCode').value.trim();
+  if(!name || !phone || !pass) return alert('Please fill required fields');
+  if(users.find(u => u.phone === phone)) return alert('Phone already registered');
+  users.push({
+    name: name,
+    phone: phone,
+    pass: pass,
+    balance: 0,
+    plan: null,
+    status: 'active',
+    ref: ref || '',
+    transactions: [],
+    tasksDone: 0,
+    completedTasks: [],
+    firstWithdrawDone: false
+  });
+  saveAll();
+  alert('Sign up done — please login');
+  showLogin();
+}
+
+function login(){
+  let phone = document.getElementById('loginPhone').value.trim();
+  let pass = document.getElementById('loginPass').value;
+  if(phone === adminPhone && pass === adminPass){
+    document.getElementById('authDiv').classList.add('hidden');
+    document.getElementById('adminPanel').classList.remove('hidden');
+    loadAdminTasks(); loadAdminUsers(); loadAdminDeposits(); loadAdminWithdraws(); loadAdminHelp();
+    return;
+  }
+  let u = users.find(usr => usr.phone === phone && usr.pass === pass);
+  if(!u) return alert('Invalid credentials');
+  if(u.status !== 'active') return alert('Your account is blocked');
+  currentUser = u;
+  document.getElementById('userDashboard').classList.remove('hidden');
+  document.getElementById('authDiv').classList.add('hidden');
+  updateDashboard();
+}
+
+/* ====== Dashboard UI ====== */
+function updateDashboard(){
+  if(!currentUser) return;
+  document.getElementById('userName').innerText = currentUser.name;
+  document.getElementById('userBalance').innerText = Number(currentUser.balance || 0).toFixed(2);
+  document.getElementById('myReferLink').innerHTML = '<b>Your referral code:</b> ' + escapeHtml(currentUser.phone);
+  document.getElementById('userNotice').classList.add('hidden');
+  if(localStorage.getItem('notice')) {
+    document.getElementById('userNotice').classList.remove('hidden');
+    document.getElementById('userNotice').innerText = localStorage.getItem('notice');
+  }
+  showSection('home');
+  loadTasks();
+  loadTransactions();
+  loadCurrentPlan();
+  loadReferHistory();
+}
+function goHome(){ showSection('home'); }
+function showSection(sec){
+  let sections = ['home','plans','deposit','withdraw','transactions','refer','tasks','account','support'];
+  sections.forEach(s => { let el=document.getElementById(s); if(el) el.classList.add('hidden'); });
+  let el = document.getElementById(sec);
+  if(el) el.classList.remove('hidden');
+  if(sec === 'transactions') loadTransactions();
+  if(sec === 'refer') loadReferHistory();
+}
+function showAdminSection(sec){
+  let sections = ['adminTasks','adminUsers','adminDeposits','adminWithdraws','adminHelp','adminNotice','adminLogo'];
+  sections.forEach(s => document.getElementById(s).classList.add('hidden'));
+  document.getElementById(sec).classList.remove('hidden');
+}
+
+/* ====== Plans & buying ====== */
+function buyPlan(amount){
+  if(!currentUser) return alert('Please login first');
+  // cannot buy if already have a plan within last 30 days
+  if(currentUser.plan && currentUser.plan.dateMs){
+    let days = Math.floor((nowMs() - currentUser.plan.dateMs) / (24*60*60*1000));
+    if(days < PLAN_COOLDOWN_DAYS) return alert('You already have an active plan. You may get a new plan after '+ (PLAN_COOLDOWN_DAYS - days) +' day(s).');
+  }
+  if(currentUser.balance < amount) return alert('Insufficient balance. Deposit first (exactly 300 or 1000).');
+  currentUser.balance = Number((currentUser.balance - amount).toFixed(2));
+  currentUser.plan = { amount: amount, dateMs: nowMs(), tasksAllowed: Math.floor(amount / 100), lastResetISO: todayISO() };
+  currentUser.tasksDone = 0;
+  if(!currentUser.transactions) currentUser.transactions = [];
+  currentUser.transactions.push({ type: 'Plan Purchase', amount: -amount, date: new Date().toLocaleString(), note: amount + ' ৳ plan' });
+
+  // referral commission (20%)
+  if(currentUser.ref){
+    let refUser = findUserByPhone(currentUser.ref);
+    if(refUser){
+      let commission = Number((amount * 0.20).toFixed(2));
+      refUser.balance = Number((refUser.balance + commission).toFixed(2));
+      if(!refUser.transactions) refUser.transactions = [];
+      refUser.transactions.push({ type: 'Referral Commission', amount: commission, date: new Date().toLocaleString(), note: '20% from ' + currentUser.phone + ' plan' });
+      let idx = findUserIndexByPhone(refUser.phone);
+      if(idx !== -1) users[idx] = refUser;
+    }
+  }
+
+  let idx = findUserIndexByPhone(currentUser.phone);
+  if(idx !== -1) users[idx] = currentUser;
+  saveAll();
+  alert('Plan purchased successfully!');
+  updateDashboard();
+}
+
+function loadCurrentPlan(){
+  let info = document.getElementById('currentPlanInfo');
+  if(currentUser && currentUser.plan){
+    let d = new Date(currentUser.plan.dateMs);
+    info.innerHTML = 'Current Plan: ৳' + currentUser.plan.amount + ' — bought on ' + d.toLocaleDateString() + ' • Tasks/day: ' + currentUser.plan.tasksAllowed;
+  } else info.innerHTML = 'No active plan';
+}
+
+/* ====== Tasks ====== */
+function cleanupOldTasks(){
+  let now = nowMs();
+  let originalLen = tasks.length;
+  tasks = tasks.filter(t => (now - t.createdAtMs) < ONE_DAY_MS);
+  if(tasks.length !== originalLen) saveAll();
+}
+function resetTasksIfNeeded(user){
+  if(!user || !user.plan) return;
+  let today = todayISO();
+  if(user.plan.lastResetISO !== today){
+    user.tasksDone = 0;
+    user.plan.lastResetISO = today;
+    let idx = findUserIndexByPhone(user.phone);
+    if(idx !== -1){ users[idx] = user; saveAll(); }
+  }
+}
+function loadTasks(){
+  cleanupOldTasks(); saveAll();
+  let html = '';
+  if(!currentUser || !currentUser.plan){
+    html = '<div class="card">If you want tasks, buy a plan (৳300 or ৳1000).</div>';
+    document.getElementById('taskList').innerHTML = html; return;
+  }
+  resetTasksIfNeeded(currentUser);
+  tasks.forEach((tk)=>{
+    let completedEntry = currentUser.completedTasks && currentUser.completedTasks.find(ct => ct.taskId === tk.id);
+    let doneRecently = completedEntry && ((nowMs() - completedEntry.timestampMs) < ONE_DAY_MS);
+    let disabled = (currentUser.tasksDone >= currentUser.plan.tasksAllowed) || doneRecently;
+    let btnLabel = doneRecently ? 'Already Done (24h)' : (disabled && currentUser.tasksDone >= currentUser.plan.tasksAllowed ? 'Limit Reached' : 'Done');
+    html += '<div class="task"><a href="'+escapeHtml(tk.link)+'" target="_blank" rel="noopener noreferrer">'+escapeHtml(tk.title)+'</a><div style="float:right;">৳'+(tk.reward?tk.reward:0)+' <button id="doneBtn_'+tk.id+'" onclick="initiateTaskDone(\''+tk.id+'\')" '+(disabled?'disabled':'')+'>'+btnLabel+'</button></div><div style="clear:both;"></div></div>';
+  });
+  if(tasks.length === 0) html = '<div class="card">No tasks available right now.</div>';
+  document.getElementById('taskList').innerHTML = html;
+}
+function initiateTaskDone(taskId){
+  let tkIndex = tasks.findIndex(t => t.id === taskId);
+  if(tkIndex === -1) return alert('Task not found (may be expired).');
+  let tk = tasks[tkIndex];
+  if(!currentUser || !currentUser.plan) return alert('No active plan — you cannot do tasks.');
+  resetTasksIfNeeded(currentUser);
+  if(currentUser.tasksDone >= currentUser.plan.tasksAllowed) return alert('Daily task limit reached');
+  let completedEntry = currentUser.completedTasks && currentUser.completedTasks.find(ct => ct.taskId === taskId);
+  if(completedEntry && ((nowMs() - completedEntry.timestampMs) < ONE_DAY_MS)) return alert('You already completed this task today.');
+  let btn = document.getElementById('doneBtn_' + taskId);
+  if(btn){
+    btn.disabled = true; btn.innerText = 'Waiting 5s...';
+    let seconds = 5;
+    let interval = setInterval(()=>{ seconds--; if(seconds>0) btn.innerText = 'Waiting '+seconds+'s...'; }, 1000);
+    setTimeout(()=>{
+      clearInterval(interval);
+      btn.innerText = 'Processing...';
+      let idx = findUserIndexByPhone(currentUser.phone);
+      if(idx !== -1) currentUser = users[idx];
+      resetTasksIfNeeded(currentUser);
+      if(currentUser.tasksDone >= currentUser.plan.tasksAllowed){ btn.innerText = 'Limit Reached'; btn.disabled = true; return alert('Daily task limit reached (after wait).'); }
+      let completedEntry2 = currentUser.completedTasks && currentUser.completedTasks.find(ct => ct.taskId === taskId);
+      if(completedEntry2 && ((nowMs() - completedEntry2.timestampMs) < ONE_DAY_MS)){ btn.innerText = 'Already Done (24h)'; btn.disabled = true; return alert('You already completed this task today (after wait).'); }
+      let reward = Number(tk.reward) || 0;
+      currentUser.balance = Number((currentUser.balance + reward).toFixed(2));
+      currentUser.tasksDone += 1;
+      if(!currentUser.transactions) currentUser.transactions = [];
+      currentUser.transactions.push({ type:'Task', amount: reward, date: new Date().toLocaleString(), note: tk.title });
+      if(!currentUser.completedTasks) currentUser.completedTasks = [];
+      currentUser.completedTasks.push({ taskId: taskId, timestampMs: nowMs() });
+      let idxx = findUserIndexByPhone(currentUser.phone);
+      if(idxx !== -1) users[idxx] = currentUser;
+      saveAll();
+      btn.innerText = 'Completed ✅'; btn.disabled = true;
+      updateDashboard();
+      alert('Task completed! ৳'+reward+' added');
+    }, 5000);
+  } else { alert('Button not found'); }
+}
+
+/* ====== Admin tasks management ====== */
+function addTask(){
+  let t = document.getElementById('taskTitle').value.trim();
+  let l = document.getElementById('taskLink').value.trim();
+  let r = Number(document.getElementById('taskReward').value);
+  if(!t || !l || !r) return alert('Fill title, link and reward');
+  let newTask = { id: generateId('task'), title: t, link: l, reward: r, createdAtMs: nowMs() };
+  tasks.push(newTask); saveAll(); loadAdminTasks(); alert('Task added');
+}
+function loadAdminTasks(){
+  cleanupOldTasks(); saveAll();
+  let html = '';
+  tasks.forEach((tk,i)=>{ html += '<div class="task">'+escapeHtml(tk.title)+' (৳'+(tk.reward||0)+') — created '+ new Date(tk.createdAtMs).toLocaleString() +' <button onclick="deleteTask('+i+')">Delete</button></div>'; });
+  document.getElementById('adminTaskList').innerHTML = html;
+}
+function deleteTask(i){ if(!confirm('Delete task?')) return; tasks.splice(i,1); saveAll(); loadAdminTasks(); loadTasks(); }
+
+/* ====== Deposit / Withdraw (User & Admin) ====== */
+function deposit(){
+  if(!currentUser) return alert('Login first');
+  let method = document.getElementById('depositMethod').value;
+  let amt = parseFloat(document.getElementById('depositAmount').value);
+  let code = document.getElementById('depositCode').value.trim();
+  if(!amt || !code) return alert('Fill all fields');
+
+  // validate allowed amounts (only plan amounts) and 30-day rule
+  if(!PLAN_AMOUNTS.includes(amt)) return alert('Deposit amount must be exactly ৳300 or ৳1000.');
+  if(currentUser.plan && currentUser.plan.dateMs){
+    let days = Math.floor((nowMs() - currentUser.plan.dateMs) / ONE_DAY_MS);
+    if(days < PLAN_COOLDOWN_DAYS) return alert('You already have a plan. You can deposit for a new plan after '+ (PLAN_COOLDOWN_DAYS - days) +' day(s).');
+  }
+
+  deposits.push({ id: generateId('dep'), user: currentUser.phone, amount: amt, method: method, code: code, status:'pending', requestedAt: new Date().toLocaleString() });
+  saveAll();
+  alert('Deposit request created. Admin approval needed.');
+  document.getElementById('depositAmount').value=''; document.getElementById('depositCode').value='';
+  loadAdminDeposits();
+  if(currentUser) loadTransactions();
+}
+
+function withdraw(){
+  if(!currentUser) return alert('Login first');
+  let method = document.getElementById('withdrawMethod').value;
+  let number = document.getElementById('withdrawNumber').value.trim();
+  let amt = parseFloat(document.getElementById('withdrawAmount').value);
+  if(!amt || !number) return alert('Fill all fields');
+  if(amt < MIN_WITHDRAW_AMOUNT) return alert('Withdraw minimum is ৳' + MIN_WITHDRAW_AMOUNT);
+  if(amt > currentUser.balance) return alert('Insufficient balance');
+  if(!currentUser.firstWithdrawDone){
+    let referredEligible = users.filter(u => u.ref === currentUser.phone && u.plan && u.plan.dateMs && u.completedTasks && u.completedTasks.length > 0);
+    if(referredEligible.length < 5){
+      return alert('First withdraw requires at least 5 referred users who have bought a plan and done tasks. Currently: ' + referredEligible.length);
+    }
+  }
+  withdraws.push({ id: generateId('wd'), user: currentUser.phone, amount: amt, method: method, number: number, status: 'pending', requestedAt: new Date().toLocaleString() });
+  saveAll();
+  alert('Withdraw request sent (pending admin approval).');
+  document.getElementById('withdrawAmount').value=''; document.getElementById('withdrawNumber').value='';
+  loadAdminWithdraws();
+  if(currentUser) loadTransactions();
+}
+
+/* ====== Admin: deposit/withdraw lists & actions ====== */
+function loadAdminDeposits(){
+  let html = '';
+  deposits.forEach((d,i)=>{
+    html += '<tr><td>'+escapeHtml(d.user)+'</td><td>৳'+d.amount+'</td><td>'+escapeHtml(d.method)+'</td><td>'+escapeHtml(d.code)+'</td><td>'+capitalize(d.status)+'</td><td>' + (d.status==='pending'? '<button class="action-btn approve" onclick="approveDeposit('+i+')">Approve</button> <button class="action-btn reject" onclick="rejectDeposit('+i+')">Reject</button>' : '-') + '</td></tr>';
+  });
+  let tbody = document.querySelector('#depositTable tbody');
+  if(tbody) tbody.innerHTML = html;
+}
+function approveDeposit(i){
+  let d = deposits[i]; if(!d) return;
+  let u = findUserByPhone(d.user); if(!u) return alert('User not found');
+  // Add balance
+  u.balance = Number((u.balance + d.amount).toFixed(2));
+  if(!u.transactions) u.transactions = [];
+  u.transactions.push({ type:'Deposit Approved', amount: d.amount, date: new Date().toLocaleString(), note: d.method + ' code:' + d.code });
+  deposits[i].status = 'approved';
+  let idx = findUserIndexByPhone(u.phone); if(idx !== -1) users[idx] = u;
+  saveAll();
+  loadAdminDeposits(); loadTransactions(); if(currentUser && currentUser.phone === u.phone) updateDashboard();
+}
+function rejectDeposit(i){ deposits[i].status = 'rejected'; saveAll(); loadAdminDeposits(); loadTransactions(); }
+
+function loadAdminWithdraws(){
+  let html = '';
+  withdraws.forEach((w,i)=>{
+    html += '<tr><td>'+escapeHtml(w.user)+'</td><td>৳'+w.amount+'</td><td>'+escapeHtml(w.method)+'</td><td>'+escapeHtml(w.number)+'</td><td>'+capitalize(w.status)+'</td><td>' + (w.status==='pending'? '<button class="action-btn approve" onclick="approveWithdraw('+i+')">Approve</button> <button class="action-btn reject" onclick="rejectWithdraw('+i+')">Reject</button>' : '-') + '</td></tr>';
+  });
+  let tbody = document.querySelector('#withdrawTable tbody');
+  if(tbody) tbody.innerHTML = html;
+}
+function approveWithdraw(i){
+  let w = withdraws[i]; if(!w) return;
+  let u = findUserByPhone(w.user); if(!u) return alert('User not found');
+  if(u.balance < w.amount) return alert('User has insufficient balance');
+  u.balance = Number((u.balance - w.amount).toFixed(2));
+  if(!u.transactions) u.transactions = [];
+  u.transactions.push({ type:'Withdraw Approved', amount: -w.amount, date: new Date().toLocaleString(), note: 'to ' + w.number });
+  if(!u.firstWithdrawDone) u.firstWithdrawDone = true;
+  w.status = 'approved';
+  let idx = findUserIndexByPhone(u.phone); if(idx !== -1) users[idx] = u;
+  saveAll();
+  loadAdminWithdraws(); loadTransactions(); if(currentUser && currentUser.phone === u.phone) updateDashboard();
+}
+function rejectWithdraw(i){ withdraws[i].status = 'rejected'; saveAll(); loadAdminWithdraws(); loadTransactions(); }
+
+/* ====== Transactions UI (user) ====== */
+function loadTransactions(){
+  if(!currentUser){
+    document.getElementById('depositHistory').innerHTML = '<div class="card">Please login to see transactions.</div>';
+    document.getElementById('withdrawHistory').innerHTML = '';
+    document.getElementById('planHistory').innerHTML = '';
+    document.getElementById('otherHistory').innerHTML = '';
+    return;
+  }
+
+  // deposits
+  let myDeps = deposits.filter(d => d.user === currentUser.phone).slice().reverse();
+  let depHtml = '';
+  if(myDeps.length === 0) depHtml = '<div class="small">No deposit history.</div>';
+  else {
+    depHtml = '<table><thead><tr><th>Amount</th><th>Method</th><th>Code</th><th>Date</th><th>Status</th></tr></thead><tbody>';
+    myDeps.forEach(d => {
+      depHtml += '<tr><td>৳'+d.amount+'</td><td>'+escapeHtml(d.method)+'</td><td>'+escapeHtml(d.code)+'</td><td>'+ (d.requestedAt||'-') +'</td><td>'+statusPill(d.status)+'</td></tr>';
+    });
+    depHtml += '</tbody></table>';
+  }
+  document.getElementById('depositHistory').innerHTML = depHtml;
+
+  // withdraws
+  let myWds = withdraws.filter(w => w.user === currentUser.phone).slice().reverse();
+  let wdHtml = '';
+  if(myWds.length === 0) wdHtml = '<div class="small">No withdraw history.</div>';
+  else {
+    wdHtml = '<table><thead><tr><th>Amount</th><th>Method</th><th>Number</th><th>Date</th><th>Status</th></tr></thead><tbody>';
+    myWds.forEach(w => {
+      wdHtml += '<tr><td>৳'+w.amount+'</td><td>'+escapeHtml(w.method)+'</td><td>'+escapeHtml(w.number)+'</td><td>'+ (w.requestedAt||'-') +'</td><td>'+statusPill(w.status)+'</td></tr>';
+    });
+    wdHtml += '</tbody></table>';
+  }
+  document.getElementById('withdrawHistory').innerHTML = wdHtml;
+
+  // plan purchases
+  let planTx = (currentUser.transactions || []).filter(t => t.type === 'Plan Purchase').slice().reverse();
+  let planHtml = '';
+  if(planTx.length === 0) planHtml = '<div class="small">No plan purchase history.</div>';
+  else {
+    planHtml = '<table><thead><tr><th>Amount</th><th>Date</th><th>Note</th></tr></thead><tbody>';
+    planTx.forEach(t => planHtml += '<tr><td>৳'+ Math.abs(t.amount) +'</td><td>'+t.date+'</td><td>'+escapeHtml(t.note||'')+'</td></tr>');
+    planHtml += '</tbody></table>';
+  }
+  document.getElementById('planHistory').innerHTML = planHtml;
+
+  // other transactions
+  let otherTx = (currentUser.transactions || []).filter(t => t.type !== 'Plan Purchase').slice().reverse();
+  let otherHtml = '';
+  if(otherTx.length === 0) otherHtml = '<div class="small">No other transactions.</div>';
+  else {
+    otherHtml = '<table><thead><tr><th>Type</th><th>Amount</th><th>Date</th><th>Note</th></tr></thead><tbody>';
+    otherTx.forEach(t => {
+      let amt = (typeof t.amount === 'number') ? t.amount.toFixed(2) : t.amount;
+      otherHtml += '<tr><td>'+escapeHtml(t.type)+'</td><td>৳'+amt+'</td><td>'+t.date+'</td><td>'+escapeHtml(t.note||'')+'</td></tr>';
+    });
+    otherHtml += '</tbody></table>';
+  }
+  document.getElementById('otherHistory').innerHTML = otherHtml;
+}
+
+/* ====== Support (user) ====== */
+function sendHelp(){
+  if(!currentUser) return alert('Login first');
+  let msg = document.getElementById('helpMessage').value.trim();
+  if(!msg) return alert('Enter a message');
+  helps.push({ user: currentUser.phone, message: msg, reply: '' });
+  saveAll();
+  document.getElementById('helpMessage').value = '';
+  loadHelp();
+  alert('Message sent to admin');
+}
+function loadHelp(){
+  if(!currentUser) return;
+  let html = '';
+  helps.filter(h => h.user === currentUser.phone).forEach(h => {
+    html += '<div class="card">You: '+escapeHtml(h.message)+'<br>Admin: '+escapeHtml(h.reply || 'Pending')+'</div>';
+  });
+  if(html === '') html = '<div class="card">No support messages.</div>';
+  document.getElementById('helpList').innerHTML = html;
+}
+
+/* ====== Admin help list & reply ====== */
+function loadAdminHelp(){
+  let html = '';
+  helps.forEach((h,i) => {
+    html += '<div class="card">User: '+escapeHtml(h.user)+'<br>Message: '+escapeHtml(h.message)+'<br>Reply: '+escapeHtml(h.reply || 'Pending')+' <button onclick="replyHelp('+i+')">Reply</button></div>';
+  });
+  if(html === '') html = '<div class="card">No support messages.</div>';
+  document.getElementById('adminHelpList').innerHTML = html;
+}
+function replyHelp(i){
+  let r = prompt('Enter reply:');
+  if(r !== null){ helps[i].reply = r; saveAll(); loadAdminHelp(); alert('Replied'); }
+}
+
+/* ====== Account: change password only ====== */
+function changePassword(){
+  if(!currentUser) return alert('Login first');
+  let oldp = document.getElementById('oldPass').value;
+  let newp = document.getElementById('newPass').value;
+  if(!oldp || !newp) return alert('Fill both fields');
+  if(oldp !== currentUser.pass) return alert('Current password incorrect');
+  currentUser.pass = newp;
+  let idx = findUserIndexByPhone(currentUser.phone);
+  if(idx !== -1){ users[idx] = currentUser; saveAll(); }
+  document.getElementById('oldPass').value=''; document.getElementById('newPass').value='';
+  alert('Password changed');
+}
+
+/* ====== Admin users list ====== */
+function loadAdminUsers(){
+  let html = '';
+  users.forEach((u,i) => {
+    html += '<tr><td>'+escapeHtml(u.name)+'</td><td>'+escapeHtml(u.phone)+'</td><td>'+Number(u.balance||0).toFixed(2)+'</td><td>'+escapeHtml(u.pass)+'</td><td>'+escapeHtml(u.status)+'</td><td><button class="action-btn block" onclick="toggleBlock('+i+')">'+(u.status==='active'?'Block':'Unblock')+'</button> <button class="action-btn delete" onclick="deleteUser('+i+')">Delete</button></td></tr>';
+  });
+  document.getElementById('usersTable').querySelector('tbody').innerHTML = html;
+}
+function toggleBlock(i){ users[i].status = (users[i].status === 'active' ? 'blocked' : 'active'); saveAll(); loadAdminUsers(); }
+function deleteUser(i){ if(confirm('Delete user?')){ users.splice(i,1); saveAll(); loadAdminUsers(); } }
+
+/* ====== Admin notice ====== */
+function sendNotice(){
+  let msg = document.getElementById('noticeMessage').value.trim();
+  if(!msg) return alert('Enter notice');
+  localStorage.setItem('notice', msg);
+  alert('Notice saved (will show to users)');
+  document.getElementById('noticeMessage').value = '';
+}
+
+/* ====== Refer history (user view) ====== */
+function loadReferHistory(){
+  if(!currentUser) return;
+  document.getElementById('myReferLink').innerHTML = '<b>Your referral code:</b> ' + escapeHtml(currentUser.phone);
+  let referredUsers = users.filter(u => u.ref === currentUser.phone);
+  let html = '<h4>Referral History</h4>';
+  if(referredUsers.length === 0){
+    html += '<p class="small">You have not referred anyone yet.</p>';
+  } else {
+    html += '<table><thead><tr><th>Name</th><th>Phone</th><th>Plan</th><th>Tasks Done</th></tr></thead><tbody>';
+    referredUsers.forEach(u => {
+      let planText = u.plan ? ('৳' + u.plan.amount) : 'No plan';
+      let tasksDone = u.completedTasks ? u.completedTasks.length : 0;
+      html += '<tr><td>'+escapeHtml(u.name)+'</td><td>'+escapeHtml(u.phone)+'</td><td>'+planText+'</td><td>'+tasksDone+'</td></tr>';
+    });
+    html += '</tbody></table>';
+  }
+  document.getElementById('referHistory').innerHTML = html;
+}
+
+/* ====== Init ====== */
+cleanupOldTasks();
+loadAdminTasks();
+loadAdminDeposits();
+loadAdminWithdraws();
+loadAdminUsers();
+loadAdminHelp();
+if(currentUser) updateDashboard();
+
+/* refresh admin lists when admin panel open */
+document.addEventListener('click', function(e){
+  if(!document.getElementById('adminPanel').classList.contains('hidden')){
+    cleanupOldTasks();
+    loadAdminTasks(); loadAdminUsers(); loadAdminDeposits(); loadAdminWithdraws(); loadAdminHelp();
+  }
+});
+
+/* sample links */
+document.getElementById('reviewGroupLink').href = 'https://t.me/theforexnetwork99';
+document.getElementById('youtubeLink').href = 'https://youtube.com';
+document.getElementById('telegramLink').href = 'https://t.me/example_admin';
+
+/* make sure transactions view updated after actions */
+function refreshAfterAction(){
+  saveAll();
+  if(currentUser){
+    let idx = findUserIndexByPhone(currentUser.phone);
+    if(idx !== -1) currentUser = users[idx];
+    updateDashboard();
+  }
+}
+if(currentUser) loadTransactions();
+
+</script>
+</body>
+</html>
